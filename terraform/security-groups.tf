@@ -7,7 +7,7 @@ resource "aws_security_group" "server-sg" {
     description = "Open API port 8080"
     from_port   = local.server-port
     to_port     = local.server-port
-    protocol    = local.all-protocols
+    protocol    = local.tcp-protocol
     cidr_blocks = ["0.0.0.0/0"]
   }
 

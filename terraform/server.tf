@@ -20,7 +20,7 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   vpc_id = aws_vpc.main.id
 
-  cidr_block              = var.cidr-block
+  cidr_block              = var.private-cidrs[0]
   availability_zone       = local.zone2
   map_public_ip_on_launch = false
 }
@@ -42,11 +42,11 @@ resource "aws_vpc_endpoint" "dynamodb-endpoint" {
 resource "aws_instance" "server" {
   ami                    = var.amis[var.aws-region]
   instance_type          = "t2.micro"
-  key_name               = "terraform"
+  key_name               = "terraform-key"
   vpc_security_group_ids = [aws_security_group.server-sg.id]
   availability_zone      = local.zone1
   subnet_id              = aws_subnet.public.id
-  iam_instance_profile   = aws_iam_instance_profile.ec2-instance-profile.arn
+  iam_instance_profile   = aws_iam_instance_profile.ec2-instance-profile.name
 
   user_data = file("${path.module}/install-codedeploy-agent.sh")
 
