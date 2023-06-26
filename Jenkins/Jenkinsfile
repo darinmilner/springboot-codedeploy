@@ -38,13 +38,11 @@ pipeline {
                 script {
                     try {
                         sh """
-                            terraform --version
-                            maven --version
                             aws --version
                         """
                     } catch (err) {
-                        echo "$err installing Terraform or AWS CLI in Docker"
-                        loggerLib.errorBanner("Terraform or AWS CLI is not installed. Please check the Dockerfile")
+                        echo "$err installing Maven or AWS CLI in Docker"
+                        loggerLib.errorBanner("Maven or AWS CLI is not installed. Please check the Dockerfile")
                     }
                 }
             }
