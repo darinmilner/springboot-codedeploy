@@ -4,7 +4,7 @@ def startCodeDeploy(String bucket, String awsRegion, String cloudEnvironment) {
     String versionNumber = storageLib.getReleaseVersion()
     echo "Starting api deployment to $groupName"
     sh """
-        aws deploy create-deployment --application-name UserServiceAPI \\
+        aws deploy create-deployment --application-name User-Service-API \\
             --s3-location bucket=${bucket},key=api/${versionNumber}/user-api-${versionNumber},bundleType=zip \\
             --deployment-group-name ${groupName} --profile Default
     """
