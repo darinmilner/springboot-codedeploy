@@ -136,12 +136,13 @@ pipeline {
 
                     def input = inputLib.getInput(message, "Deploy to All Regions", message, ["yes", "no"])
 
-                    if (input == "yes") {
-                        echo "Input to all regions"
-                        codedeployLib.deployToAllEnvironments(awsRegion)
-                    }else {
-                        codedeployLib.startCodeDeploy(backendBucket, awsRegion, cloudEnv)
-                    }
+//                     if (input == "yes") {
+//                         echo "Input to all regions"
+//                         codedeployLib.deployToAllEnvironments(awsRegion)
+//                     }else {
+//                         codedeployLib.startCodeDeploy(backendBucket, awsRegion, cloudEnv)
+//                     }
+                    codedeployLib.startCodeDeploy(backendBucket, awsRegion, cloudEnv)
                 }
             }
         }
