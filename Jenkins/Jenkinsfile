@@ -1,0 +1,159 @@
+#! groovy
+
+def commonLib = evaluate readTrusted("Jenkins/Pipeline/common.groovy")
+def buildAPILib = evaluate readTrusted("Jenkins/Pipeline/buildAPI.groovy")
+def storageLib = evaluate readTrusted("Jenkins/Pipeline/storage.groovy")
+def loggerLib = evaluate readTrusted("Jenkins/Pipeline/logger.groovy")
+def changeTicketLib = evaluate readTrusted("Jenkins/Pipeline/changeTicket.groovy")
+def codedeployLib = evaluate readTrusted("Jenkins/Pipeline/codedeploy.groovy")
+def inputLib = evaluate readTrusted("Jenkins/Pipeline/input.groovy")
+
+String backendBucket
+String awsRegion
+String pipelineAction
+String cloudEnv
+String ticket
+
+pipeline {
+    agent {
+        dockerfile {
+            filename "Jenkins/Agents/Dockerfile"
+        }
+    }
+
+    environment {
+        String BUCKET_PREFIX = "taskapi-storage-bucket-"
+        String DYNAMO_TABLE_PREFIX = "state-lock-table-"
+    }
+
+    parameters {
+        choice(name: "PIPELINE_ACTION", choices: ["test", "deploy-api"], description: "Pipeline deploy action")
+        choice(name: "CLOUD_ENVIRONMENT", choices: ["dev", "test", "prod"], description: "Deployment cloud environment")
+        choice(name: "AWS_REGION", choices: ["us-east-1", "us-east-2", "us-west-1", "ap-southeast-3"], description: "AWS Region to deploy resources and app")
+    }
+
+    stages {
+        stage("Check Agent") {
+            steps {
+                script {
+                    try {
+                        sh """
+                            terraform --version
+                            maven --version
+                            aws --version
+                        """
+                    } catch (err) {
+                        echo "$err installing Terraform or AWS CLI in Docker"
+                        loggerLib.errorBanner("Terraform or AWS CLI is not installed. Please check the Dockerfile")
+                    }
+                }
+            }
+        }
+
+        stage("Set Variables") {
+            steps {
+                script {
+                    pipelineAction = params.PIPELINE_ACTION
+                    awsRegion = params.AWS_REGION
+                    cloudEnv = params.CLOUD_ENVIRONMENT
+
+                    backendBucket = commonLib.getBucketName(awsRegion)
+                    stateTable = commonLib.getDynamoDBStateTableName(awsRegion)
+
+                    echo "API storage bucket: $backendBucket"
+                    echo "Current AWS Region: $awsRegion"
+                    echo "Cloud Environment $cloudEnv"
+
+                    loggerLib.echoBanner(" \tPipeline Variables set\n \tregion: $awsRegion\n \ts3 bucket $backendBucket\n")
+                }
+            }
+        }
+
+        stage("Run API Tests") {
+            steps {
+                script {
+                    timeout(time: 15, unit: "MINUTES") {
+                        buildAPILib.runAPITests()
+                    }
+                }
+            }
+        }
+
+        stage("Configure AWS Environment") {
+            steps {
+                script {
+                    commonLib.configureAWSProfile(awsRegion)
+                }
+            }
+        }
+
+         stage("Push API to S3") {
+            steps {
+                script {
+                    storageLib.zipAndPushAPIToS3(backendBucket)
+                }
+            }
+        }
+
+        stage("Submit change ticket"){
+            when {
+                expression {
+                    return cloudEnv == "prod"
+                }
+            }
+
+            steps {
+                script {
+                    timeout(time: 15, unit: "MINUTES") {
+                        ticket = changeTicketLib.submitChangeTicket()
+                    }
+                }
+            }
+        }
+
+        stage("Deploy API") {
+            when {
+                expression {
+                    return pipelineAction == "deploy-api"
+                }
+            }
+
+            steps {
+                script {
+                     if (cloudEnv == "prod") {
+                        echo "Change ticket $ticket"
+                        if (ticket == null || ticket == "") {
+                            throw new Exception("Change Ticket can not be empty when applying to production.")
+                        }
+                    }
+
+                    if (awsRegion != "us-east-1") {
+                        storageLib.getAPIEnvFileFromUSEast1Bucket(awsRegion)
+                    }
+                    String groups = codedeployLib.getCodeDeployGroupsNames(awsRegion)
+
+                    storageLib.getAPIEnvFile(backendBucket)
+
+                    String message = "Would you like to deploy to all cloud environments?"
+
+                    def input = inputLib.getInput(message, "Deploy to All Regions", message, ["yes", "no"])
+
+                    if (input == "yes") {
+                        echo "Input to all regions"
+                        codedeployLib.deployToAllEnvironments(awsRegion)
+                    }else {
+                        codedeployLib.startCodeDeploy(backendBucket, awsRegion, cloudEnv)
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        // Clean after build
+        always {
+            echo "Cleaning workspace"
+            cleanWs()
+        }
+    }
+}
