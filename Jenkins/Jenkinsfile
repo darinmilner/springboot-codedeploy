@@ -17,7 +17,7 @@ String ticket
 pipeline {
     agent {
         dockerfile {
-            filename "Jenkins/Agents/Dockerfile"
+            filename "Jenkins/Agent/Dockerfile"
         }
     }
 
