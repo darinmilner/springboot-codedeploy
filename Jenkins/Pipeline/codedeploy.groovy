@@ -8,8 +8,6 @@ def startCodeDeploy(String bucket, String awsRegion, String cloudEnvironment) {
             --s3-location bucket=${bucket},key=api/${versionNumber}/user-api-${versionNumber},bundleType=zip \\
             --deployment-group-name ${groupName} --profile Default
     """
-//    --deployment-config-name CodeDeployDefault.OneAtATime \\
-//            --description UserAPICopeDeploy  --Profile Default
 }
 
 String deployToAllEnvironments(String region) {
