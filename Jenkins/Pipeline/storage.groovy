@@ -38,7 +38,7 @@ def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion) {
             sh """
                 aws configure set region ${awsRegion} 
                 aws configure set aws_access_key_id $ACCESSKEY 
-                aws configure set aws_secret_key_id $SECRETKEY 
+                aws configure set aws_secret_access_id $SECRETKEY 
                 file = \$(aws s3 ls  s3://$bucketName/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}') 
                 echo file 
                 # aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/envfiles/application-prod.yaml  --profile Default
