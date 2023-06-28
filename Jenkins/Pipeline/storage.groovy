@@ -36,7 +36,7 @@ def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion) {
         echo "Pushing API code to $bucketName"
         sh """
             aws configure set region ${awsRegion} --profile Default
-            file = \$(aws s3 ls  s3://$bucketName/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}') --profile Default
+            file = \$(aws s3 ls  s3://$bucketName/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}' --profile Default) 
             echo file 
            # aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/envfiles/application-prod.yaml  --profile Default
         """
