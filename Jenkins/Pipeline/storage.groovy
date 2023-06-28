@@ -8,7 +8,7 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
                 aws configure set aws_secret_access_key $SECRETKEY  
                # aws s3 cp s3://taskapi-storage-bucket-useast1/application-prod.yaml src/resources/application-prod.yaml --profile Default
                 file=\$(aws s3 ls  s3://taskapi-storage-bucket-useast1/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}') 
-                aws s3 cp s3://taskap-storage-bucket-useast1/\$file src/resources/application-prod.yaml
+                aws s3 cp s3://taskapi-storage-bucket-useast1/\$file src/resources/application-prod.yaml
             """
         }
     } catch (Exception err) {
