@@ -34,12 +34,16 @@ def getAPIEnvFile(String bucketName) {
 def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion) {
     try {
         echo "Pushing API code to $bucketName"
-        sh """
-            aws configure set region ${awsRegion} --profile Default
-            file = \$(aws s3 ls  s3://$bucketName/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}' --profile Default) 
-            echo file 
-           # aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/envfiles/application-prod.yaml  --profile Default
-        """
+        withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
+            sh """
+                aws configure set region ${awsRegion} --profile Default
+                aws configure set aws_access_key_id $ACCESSKEY --profile Default
+                aws configure set aws_secret_key_id $SECRETKEY --profile Default
+                file = \$(aws s3 ls  s3://$bucketName/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}') 
+                echo file 
+                # aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/envfiles/application-prod.yaml  --profile Default
+            """
+        }
     } catch (Exception err) {
         def errorLib = evaluate readTrusted("Jenkins/Pipeline/errors.groovy")
         echo "Pipeline is exiting! $err"
