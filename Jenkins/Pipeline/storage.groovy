@@ -21,7 +21,8 @@ def getAPIEnvFile(String bucketName) {
     try {
         echo "Getting application file from s3 bucket $bucketName"
         sh """
-            aws s3 cp s3://${bucketName}/application-prod.yaml src/resources/application-prod.yaml --profile Default
+            aws s3 cp s3://${bucketName}/envfiles/ src/resources/application-prod.yaml --profile Default
+            cat src/resources/application-prod.yaml
         """
     } catch (Exception err) {
         def errorLib = evaluate readTrusted("Jenkins/Pipeline/errors.groovy")
@@ -35,7 +36,9 @@ def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion) {
         echo "Pushing API code to $bucketName"
         sh """
             aws configure set region ${awsRegion} --profile Default
-            aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/application-prod.yaml  --profile Default
+            file = \$(aws s3 ls  s3://$bucketName/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}')
+            echo file 
+           # aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/envfiles/application-prod.yaml  --profile Default
         """
     } catch (Exception err) {
         def errorLib = evaluate readTrusted("Jenkins/Pipeline/errors.groovy")
@@ -43,7 +46,6 @@ def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion) {
         errorLib.throwError(err, "Error pushing code to S3 bucket $err")
     }
 }
-
 
 def zipAndPushAPIToS3(String bucketName) {
     String versionNumber = getReleaseVersion()
