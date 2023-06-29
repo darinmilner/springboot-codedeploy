@@ -1,5 +1,5 @@
-String getRegionShortName(String region) {
-    return region.replace("-", "")
+String getRegionShortName(String awsRegion) {
+    return awsRegion.replace("-", "")
 }
 
 String getBucketName(String awsRegion) {

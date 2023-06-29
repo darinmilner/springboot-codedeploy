@@ -10,11 +10,11 @@ def startCodeDeploy(String bucket, String awsRegion, String cloudEnvironment) {
     """
 }
 
-String deployToAllEnvironments(String region) {
+String deployToAllEnvironments(String awsRegion) {
     def commonLib = evaluate readTrusted("Jenkins/Pipeline/common.groovy")
     List environments = ["dev", "test", "prod"]
     for (env in environments) {
-        String groupName = commonLib.getRegionShortName(region) + "-$env"
+        String groupName = commonLib.getRegionShortName(awsRegion) + "-$env"
         println groupName
         echo "Going to deploy to $env"
     }
@@ -41,13 +41,13 @@ String getCodeDeployGroup(String awsRegion, String cloudEnvironment) {
     }
 }
 
-List<String> loopThroughCodeDeployGroups(String region) {
+List<String> loopThroughCodeDeployGroups(String awsRegion) {
     def commonLib = evaluate readTrusted("Jenkins/Pipeline/common.groovy")
     List environments = ["dev", "test", "prod"]
     List<String> groups = []
     String codeDeployGroupName = "User-Service-API-DeploymentGroup-"
     for (env in environments) {
-        String groupName = codeDeployGroupName + commonLib.getRegionShortName(region) + "-$env"
+        String groupName = codeDeployGroupName + commonLib.getRegionShortName(awsRegion) + "-$env"
         groups.add(groupName)
         // TODO: add codedeploy deploy cli commads
         echo "Starting api deployment to $groupName"
@@ -55,14 +55,17 @@ List<String> loopThroughCodeDeployGroups(String region) {
     return groups
 }
 
-List<String> getCodeDeployGroupsNames(String region) {
+List<String> getCodeDeployGroupsNames(String awsRegion) {
     List<String> groups
     switch (region) {
         case "us-east-1":
-            groups = loopThroughCodeDeployGroups(region)
+            groups = loopThroughCodeDeployGroups(awsRegion)
             break
         case "us-east-2":
-            groups = loopThroughCodeDeployGroups(region)
+            groups = loopThroughCodeDeployGroups(awsRegion)
+            break
+        case "us-west-1":
+            groups = loopThroughCodeDeployGroups(awsRegion)
             break
         default:
             throw new Exception("Invalid Region")

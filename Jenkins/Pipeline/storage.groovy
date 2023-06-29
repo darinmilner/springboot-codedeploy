@@ -1,4 +1,5 @@
 def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
+    String fileCommand = sh(script: "aws s3 ls  s3://taskapi-storage-bucket-useast1/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}'", returnStdout: true)
     try {
         echo "Getting application file from us-east-1 s3 bucket"
         withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
@@ -6,8 +7,7 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
                 aws configure set region us-east-1
                 aws configure set aws_access_key_id $ACCESSKEY 
                 aws configure set aws_secret_access_key $SECRETKEY  
-               # aws s3 cp s3://taskapi-storage-bucket-useast1/application-prod.yaml src/resources/application-prod.yaml --profile Default
-                file=\$(aws s3 ls  s3://taskapi-storage-bucket-useast1/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}') 
+                file=\$($fileCommand) 
                 aws s3 cp s3://taskapi-storage-bucket-useast1/\$file src/resources/application-prod.yaml
             """
         }
@@ -19,7 +19,7 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
 
     if (awsRegion != "us-east-1") {
         String region = awsRegion.replace("-", "")
-        copyEnvFileToRegionalS3Bucket("taskapi-storage-bucket-${region}", awsRegion)
+        copyEnvFileToRegionalS3Bucket("taskapi-storage-bucket-${region}", awsRegion, fileCommand)
     }
 }
 
@@ -37,7 +37,7 @@ def getAPIEnvFile(String bucketName) {
     }
 }
 
-def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion) {
+def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion, String fileCommand) {
     try {
         echo "Pushing API code to $bucketName"
         withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
@@ -45,7 +45,7 @@ def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion) {
                 aws configure set region ${awsRegion} 
                 aws configure set aws_access_key_id $ACCESSKEY 
                 aws configure set aws_secret_access_key $SECRETKEY  
-                aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/envfiles/application-prod.yaml  --profile Default
+                aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/envfiles/$fileCommand  --profile Default
             """
         }
     } catch (Exception err) {
