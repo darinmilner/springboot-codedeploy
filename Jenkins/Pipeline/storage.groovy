@@ -10,11 +10,8 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
             """, returnStdout: true)
             echo "Command $fileCommand"
 
-            sh """
-                aws configure set region us-east-1
-                aws configure set aws_access_key_id $ACCESSKEY 
-                aws configure set aws_secret_access_key $SECRETKEY  
-                aws s3 cp s3://taskapi-storage-bucket-useast1/${fileCommand}/ src/resources/application-prod.yaml
+            sh """  
+                aws s3 cp s3://taskapi-storage-bucket-useast1/${fileCommand}/ src/resources/application-prod.yaml --profile Default
             """
         }
     } catch (Exception err) {
