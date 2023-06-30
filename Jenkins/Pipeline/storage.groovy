@@ -1,8 +1,10 @@
 def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
-    String fileCommand = sh(script: "aws s3 ls  s3://taskapi-storage-bucket-useast1/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}'", returnStdout: true)
     try {
         echo "Getting application file from us-east-1 s3 bucket"
         withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
+            String fileCommand = sh(script: "aws s3 ls  s3://taskapi-storage-bucket-useast1/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}'", returnStdout: true)
+            echo "Command $fileCommand"
+
             sh """
                 aws configure set region us-east-1
                 aws configure set aws_access_key_id $ACCESSKEY 
