@@ -6,7 +6,7 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
                 aws configure set region us-east-1
                 aws configure set aws_access_key_id $ACCESSKEY 
                 aws configure set aws_secret_access_key $SECRETKEY  
-                aws s3 ls  s3://taskapi-storage-bucket-useast1/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}'
+                aws s3 ls s3://taskapi-storage-bucket-useast1/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}'
             """, returnStdout: true)
             echo "Command $fileCommand"
 
@@ -14,7 +14,7 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
                 aws configure set region us-east-1
                 aws configure set aws_access_key_id $ACCESSKEY 
                 aws configure set aws_secret_access_key $SECRETKEY  
-                aws s3 cp s3://taskapi-storage-bucket-useast1/${fileCommand} src/resources/application-prod.yaml
+                aws s3 cp s3://taskapi-storage-bucket-useast1/${fileCommand}/ src/resources/application-prod.yaml
             """
         }
     } catch (Exception err) {
