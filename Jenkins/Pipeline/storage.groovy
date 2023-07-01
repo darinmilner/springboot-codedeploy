@@ -1,7 +1,5 @@
 def getAPIEnvFileFromUSEast1Bucket(String awsRegion, String bucketName) throws Exception {
-
     try {
-        echo "Getting application file from us-east-1 s3 bucket aws cli command $fileCommand"
         withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
             sh """
                 aws configure set region us-east-1
@@ -12,9 +10,8 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion, String bucketName) throws E
             """
         }
     } catch (Exception err) {
-        def errorLib = evaluate readTrusted("Jenkins/Pipeline/errors.groovy")
         echo "Pipeline is exiting $err!"
-        errorLib.throwError(err, "Error getting file from us-east-1 s3 bucket $err")
+        throw new Exception("Error getting file from us-east-1 s3 bucket $err")
     }
 
     if (awsRegion != "us-east-1") {
