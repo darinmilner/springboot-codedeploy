@@ -127,7 +127,7 @@ pipeline {
                     }
 
                     if (awsRegion != "us-east-1") {
-                        storageLib.getAPIEnvFileFromUSEast1Bucket(awsRegion)
+                        storageLib.getAPIEnvFileFromUSEast1Bucket(awsRegion, backendBucket)
                     }
                     String groups = codedeployLib.getCodeDeployGroupsNames(awsRegion)
 
