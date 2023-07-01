@@ -22,14 +22,25 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion, String bucketName) throws E
                 aws configure set aws_access_key_id $ACCESSKEY 
                 aws configure set aws_secret_access_key $SECRETKEY  
                 file=\$(aws s3 ls s3://${env.USEAST1_BUCKET}/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}')
-                aws configure set region ${awsRegion} 
-                aws configure set aws_access_key_id $ACCESSKEY 
-                aws configure set aws_secret_access_key $SECRETKEY  
-                aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/\$file  --profile Default
+                ${configureAWSRegion(awsRegion)} 
+                cat src/resources/
+                aws s3 cp src/resources/application-prod-1.yaml s3://${bucketName}/\$file  --profile Default
             """
         }
         //copyEnvFileToRegionalS3Bucket("taskapi-storage-bucket-${region}", awsRegion, fileCommand)
     }
+}
+
+String configureAWSRegion(String awsRegion) {
+    String region = sh(
+            script: """
+                aws configure set region ${awsRegion}
+                aws configure set aws_access_key_id $ACCESSKEY
+                aws configure set aws_secret_access_key $SECRETKEY
+            """
+    )
+    echo "Region configured to $region"
+    return region
 }
 
 def getAPIEnvFile(String bucketName) {
