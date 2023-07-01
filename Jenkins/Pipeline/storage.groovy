@@ -32,11 +32,13 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion, String bucketName) throws E
 }
 
 String configureAWSRegion(String awsRegion) {
-    sh """
+    sh(script: """
           aws configure set region ${awsRegion}
           aws configure set aws_access_key_id $ACCESSKEY
           aws configure set aws_secret_access_key $SECRETKEY
-       """
+       """,
+            returnStdout: true
+    )
 }
 
 def getAPIEnvFile(String bucketName) {
