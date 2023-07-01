@@ -2,9 +2,9 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion) throws Exception {
     String fileCommand = getFileCommand()
     try {
         echo "Getting application file from us-east-1 s3 bucket aws cli command $fileCommand"
-        sh """  
-            aws s3 cp s3://${env.USEAST1_BUCKET}//${fileCommand}/ src/resources/application-prod.yaml --profile Default
-        """
+        sh(script: """  
+            aws s3 cp s3://${env.USEAST1_BUCKET}/${fileCommand} src/resources/application-prod.yaml --profile Default
+        """, returnStdout: true)
     } catch (Exception err) {
         def errorLib = evaluate readTrusted("Jenkins/Pipeline/errors.groovy")
         echo "Pipeline is exiting $err!"
