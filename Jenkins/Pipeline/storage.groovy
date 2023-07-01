@@ -1,19 +1,10 @@
-def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
+def getAPIEnvFileFromUSEast1Bucket(String awsRegion) throws Exception {
+    String fileCommand = getFileCommand()
     try {
-        echo "Getting application file from us-east-1 s3 bucket"
-        withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
-            String fileCommand = sh(script: """
-                aws configure set region us-east-1
-                aws configure set aws_access_key_id $ACCESSKEY 
-                aws configure set aws_secret_access_key $SECRETKEY  
-                aws s3 ls s3://taskapi-storage-bucket-useast1/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}'
-            """, returnStdout: true)
-            echo "Command $fileCommand"
-
-            sh """  
-                aws s3 cp s3://taskapi-storage-bucket-useast1/${fileCommand}/ src/resources/application-prod.yaml --profile Default
-            """
-        }
+        echo "Getting application file from us-east-1 s3 bucket aws cli command $fileCommand"
+        sh """  
+            aws s3 cp s3://${env.USEAST1_BUCKET}/${fileCommand}/ src/resources/application-prod.yaml --profile Default
+        """
     } catch (Exception err) {
         def errorLib = evaluate readTrusted("Jenkins/Pipeline/errors.groovy")
         echo "Pipeline is exiting $err!"
@@ -23,6 +14,19 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion) {
     if (awsRegion != "us-east-1") {
         String region = awsRegion.replace("-", "")
         copyEnvFileToRegionalS3Bucket("taskapi-storage-bucket-${region}", awsRegion, fileCommand)
+    }
+}
+
+String getFileCommand() {
+    withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
+        String fileCommand = sh(script: """
+                aws configure set region us-east-1
+                aws configure set aws_access_key_id $ACCESSKEY 
+                aws configure set aws_secret_access_key $SECRETKEY  
+                aws s3 ls s3://${env.USEAST1_BUCKET}/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}'
+            """, returnStdout: true)
+        echo "Command $fileCommand"
+        return fileCommand
     }
 }
 
@@ -48,7 +52,7 @@ def copyEnvFileToRegionalS3Bucket(String bucketName, String awsRegion, String fi
                 aws configure set region ${awsRegion} 
                 aws configure set aws_access_key_id $ACCESSKEY 
                 aws configure set aws_secret_access_key $SECRETKEY  
-                aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/envfiles/$fileCommand  --profile Default
+                aws s3 cp src/resources/application-prod.yaml s3://${bucketName}/${fileCommand}/  --profile Default
             """
         }
     } catch (Exception err) {
@@ -66,7 +70,7 @@ def zipAndPushAPIToS3(String bucketName) {
         sh """
             zip -r ${zipFileName}.zip src/
             ls -la
-            aws s3 cp ${WORKSPACE}/${zipFileName}.zip s3://${bucketName}/api/${versionNumber}/  --profile Default
+            aws s3 cp ${env.WORKSPACE}/${zipFileName}.zip s3://${bucketName}/api/${versionNumber}/  --profile Default
         """
     } catch (Exception err) {
         def errorLib = evaluate readTrusted("Jenkins/Pipeline/errors.groovy")

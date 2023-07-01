@@ -24,6 +24,7 @@ pipeline {
     environment {
         String BUCKET_PREFIX = "taskapi-storage-bucket-"
         String DYNAMO_TABLE_PREFIX = "state-lock-table-"
+        String USEAST1_BUCKET = "taskapi-storage-bucket-useast1"
     }
 
     parameters {
