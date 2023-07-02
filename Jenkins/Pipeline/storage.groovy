@@ -1,5 +1,6 @@
 def getAPIEnvFileFromUSEast1Bucket(String awsRegion, String bucketName) throws Exception {
     try {
+        // TODO: call python script to get the name of the latest env file from s3
         withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
             sh """
                 aws configure set region us-east-1
@@ -18,12 +19,9 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion, String bucketName) throws E
         String region = awsRegion.replace("-", "")
         withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
             sh """
-                aws configure set region us-east-1
-                aws configure set aws_access_key_id $ACCESSKEY 
-                aws configure set aws_secret_access_key $SECRETKEY  
+                ${configureAWSRegion("us-east-1")}   
                 file=\$(aws s3 ls s3://${env.USEAST1_BUCKET}/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}')
                 ${configureAWSRegion(awsRegion)} 
-                cat src/resources/
                 aws s3 cp src/resources/application-prod-1.yaml s3://${bucketName}/\$file  --profile Default
             """
         }
@@ -32,13 +30,14 @@ def getAPIEnvFileFromUSEast1Bucket(String awsRegion, String bucketName) throws E
 }
 
 String configureAWSRegion(String awsRegion) {
-    sh(script: """
+    withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
+        sh(script: """
           aws configure set region ${awsRegion}
           aws configure set aws_access_key_id $ACCESSKEY
           aws configure set aws_secret_access_key $SECRETKEY
-       """,
-            returnStdout: true
-    )
+       """, returnStdout: true
+        )
+    }
 }
 
 def getAPIEnvFile(String bucketName) {

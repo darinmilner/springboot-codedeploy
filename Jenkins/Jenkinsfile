@@ -127,7 +127,13 @@ pipeline {
                     }
 
                     if (awsRegion != "us-east-1") {
+                        // TODO: get the value of the python file and pass it as a path to storage functions
+                        sh """
+                            cd Jenkins/Scripts/
+                            python3 get_file.py ACCESSKEY SECRETKEY
+                        """
                         storageLib.getAPIEnvFileFromUSEast1Bucket(awsRegion, backendBucket)
+
                     }
                     String groups = codedeployLib.getCodeDeployGroupsNames(awsRegion)
 
