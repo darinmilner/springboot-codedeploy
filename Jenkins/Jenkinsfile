@@ -140,9 +140,9 @@ pipeline {
                         }
                     }
 
-                    String groups = codedeployLib.getCodeDeployGroupsNames(awsRegion, cloudEnv)
-
                     storageLib.getAPIEnvFile(backendBucket)
+
+                    String groups = codedeployLib.getCodeDeployGroupsNames(awsRegion)
 
                     String message = "Would you like to deploy to all cloud environments?"
 

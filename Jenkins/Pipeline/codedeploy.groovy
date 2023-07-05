@@ -57,7 +57,7 @@ List<String> loopThroughCodeDeployGroups(String awsRegion) {
 
 List<String> getCodeDeployGroupsNames(String awsRegion) {
     List<String> groups
-    switch (region) {
+    switch (awsRegion) {
         case "us-east-1":
             groups = loopThroughCodeDeployGroups(awsRegion)
             break
