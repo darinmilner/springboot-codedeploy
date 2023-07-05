@@ -140,7 +140,7 @@ pipeline {
                         }
                     }
 
-                    storageLib.getAPIEnvFile(backendBucket)
+                    storageLib.getAPIEnvFile(backendBucket, filename)
 
                     String groups = codedeployLib.getCodeDeployGroupsNames(awsRegion)
 
