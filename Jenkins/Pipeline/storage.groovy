@@ -24,11 +24,11 @@ String configureAWSRegion(String awsRegion) {
     }
 }
 
-def getAPIEnvFile(String bucketName) {
+def getAPIEnvFile(String bucketName, String filePath) {
     try {
-        echo "Getting application file from s3 bucket $bucketName"
+        echo "Getting application file $filePath from s3 bucket $bucketName"
         sh """
-            aws s3 cp s3://${bucketName}/envfiles/ src/resources/application-prod.yaml --profile Default
+            aws s3 cp s3://${bucketName}/${filePath} src/resources/application-prod.yaml --profile Default
             cat src/resources/application-prod.yaml
         """
     } catch (Exception err) {
