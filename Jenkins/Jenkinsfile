@@ -94,7 +94,8 @@ pipeline {
             }
             steps {
                 script {
-                       storageLib.getAndUploadLatestEnvFileToS3(awsRegion, backendBucket)
+                      String envFileName = storageLib.getAndUploadLatestEnvFileToS3(awsRegion, backendBucket)
+                      echo "Envfile name $envFileName"
                 }
             }
         }
