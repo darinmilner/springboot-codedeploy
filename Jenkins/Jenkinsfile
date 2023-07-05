@@ -13,6 +13,7 @@ String awsRegion
 String pipelineAction
 String cloudEnv
 String ticket
+String envFileName
 
 pipeline {
     agent {
@@ -94,7 +95,7 @@ pipeline {
             }
             steps {
                 script {
-                      String envFileName = storageLib.getAndUploadLatestEnvFileToS3(awsRegion, backendBucket)
+                      envFileName = storageLib.getAndUploadLatestEnvFileToS3(awsRegion, backendBucket)
                       echo "Envfile name $envFileName"
                 }
             }
