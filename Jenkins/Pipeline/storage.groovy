@@ -5,6 +5,7 @@ def getAndUploadLatestEnvFileToS3(String awsRegion, String bucketName) {
             cd Jenkins/Scripts/
             mkdir -p envfiles/
             python3 get_file.py $ACCESSKEY $SECRETKEY $awsRegion $bucketName
+            cd envfiles/
             ls -la
         """
     }
@@ -60,7 +61,6 @@ def zipAndPushAPIToS3(String bucketName) {
         echo "Pushing API code to $bucketName"
         sh """
             zip -r ${zipFileName}.zip src/
-            ls -la
             aws s3 cp ${env.WORKSPACE}/${zipFileName}.zip s3://${bucketName}/api/${versionNumber}/  --profile Default
         """
     } catch (Exception err) {
