@@ -1,8 +1,8 @@
-String getInput(String message, String name, String description, List<String> choices) {
-    def inputMessage = input(
+boolean getInput(String message, String description) {
+    boolean inputMessage = input(
             message: message,
             parameters: [
-                    choice(name: name, choices: choices, description: description)
+                    booleanParam(defaultValue: true, description: description)
             ])
     return inputMessage
 }

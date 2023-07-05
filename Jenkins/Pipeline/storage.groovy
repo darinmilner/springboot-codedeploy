@@ -1,31 +1,13 @@
-def getAPIEnvFileFromUSEast1Bucket(String awsRegion, String bucketName) throws Exception {
-    try {
-        // TODO: call python script to get the name of the latest env file from s3
-        withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
-            sh """
-                aws configure set region us-east-1
-                aws configure set aws_access_key_id $ACCESSKEY 
-                aws configure set aws_secret_access_key $SECRETKEY  
-                file=\$(aws s3 ls s3://${env.USEAST1_BUCKET}/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}')
-                aws s3 cp s3://${env.USEAST1_BUCKET}/\$file src/resources/\$file --profile Default
-            """
-        }
-    } catch (Exception err) {
-        echo "Pipeline is exiting $err!"
-        throw new Exception("Error getting file from us-east-1 s3 bucket $err")
-    }
-
-    if (awsRegion != "us-east-1") {
-        String region = awsRegion.replace("-", "")
-        withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
-            sh """
-                ${configureAWSRegion("us-east-1")}   
-                file=\$(aws s3 ls s3://${env.USEAST1_BUCKET}/envfiles/ --recursive | sort | tail -n 1 | awk '{print \$4}')
-                ${configureAWSRegion(awsRegion)} 
-                aws s3 cp src/resources/application-prod-1.yaml s3://${bucketName}/\$file  --profile Default
-            """
-        }
-        //copyEnvFileToRegionalS3Bucket("taskapi-storage-bucket-${region}", awsRegion, fileCommand)
+def getAndUploadLatestEnvFileToS3(String awsRegion, String bucketName) {
+    withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
+        sh """
+            #!/bin/bash
+            cd Jenkins/Scripts/
+            mkdir -p envfiles/
+            python3 get_file.py $ACCESSKEY $SECRETKEY $awsRegion $bucketName
+            cd Jenkins/Scripts
+            ls -la
+        """
     }
 }
 

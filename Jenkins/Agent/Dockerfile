@@ -5,3 +5,5 @@ RUN apk upgrade && apk update && apk add --no-cache python3 py-pip git zip
 RUN apk add --no-cache aws-cli
 
 RUN echo which aws
+
+RUN pip install boto3

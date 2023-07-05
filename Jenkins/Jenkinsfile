@@ -86,6 +86,19 @@ pipeline {
             }
         }
 
+        stage("Code Deploy") {
+            when {
+                expression {
+                    return pipelineAction == "deploy-api"
+                }
+            }
+            steps {
+                script {
+                       storageLib.getAndUploadLatestEnvFileToS3(awsRegion, backendBucket)
+                }
+            }
+        }
+
          stage("Push API to S3") {
             steps {
                 script {
@@ -126,29 +139,20 @@ pipeline {
                         }
                     }
 
-                    if (awsRegion != "us-east-1") {
-                        // TODO: get the value of the python file and pass it as a path to storage functions
-                        sh """
-                            cd Jenkins/Scripts/
-                            python3 get_file.py ACCESSKEY SECRETKEY
-                        """
-                        storageLib.getAPIEnvFileFromUSEast1Bucket(awsRegion, backendBucket)
-
-                    }
                     String groups = codedeployLib.getCodeDeployGroupsNames(awsRegion)
 
                     storageLib.getAPIEnvFile(backendBucket)
 
                     String message = "Would you like to deploy to all cloud environments?"
 
-                    def input = inputLib.getInput(message, "Deploy to All Regions", message, ["yes", "no"])
+                    def allRegions = inputLib.getInput(message, "Deploy to All Regions")
 
-//                     if (input == "yes") {
-//                         echo "Input to all regions"
-//                         codedeployLib.deployToAllEnvironments(awsRegion)
-//                     }else {
-//                         codedeployLib.startCodeDeploy(backendBucket, awsRegion, cloudEnv)
-//                     }
+                    if (allRegions) {
+                        echo "Input to all regions"
+                        codedeployLib.deployToAllEnvironments(awsRegion)
+                    }else {
+                        codedeployLib.startCodeDeploy(backendBucket, awsRegion, cloudEnv)
+                    }
                     codedeployLib.startCodeDeploy(backendBucket, awsRegion, cloudEnv)
                 }
             }
