@@ -1,13 +1,15 @@
 def getAndUploadLatestEnvFileToS3(String awsRegion, String bucketName) {
     withCredentials([usernamePassword(credentialsId: "amazon", usernameVariable: "ACCESSKEY", passwordVariable: "SECRETKEY")]) {
-        sh """
+        sh(
+                script: """
             #!/bin/bash
             cd Jenkins/Scripts/
             mkdir -p envfiles/
             python3 get_file.py $ACCESSKEY $SECRETKEY $awsRegion $bucketName
             cd envfiles/
             ls -la
-        """
+        """, returnStdout: true
+        )
     }
 }
 

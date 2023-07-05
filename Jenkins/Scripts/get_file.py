@@ -60,3 +60,5 @@ s3file = get_latest_envfile(s3setup)
 
 if upload_region != s3setup.envfile_region:
     upload_envfile_to_regional_bucket(s3setup, s3file)
+
+print(s3file)
