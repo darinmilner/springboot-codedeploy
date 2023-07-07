@@ -42,6 +42,7 @@ def upload_envfile_to_regional_bucket(setup, file, object=None):
         region_name=setup.region
     )
     s3_client = session.client("s3")
+    print(file)
     if object is None:
         object = f"{setup.envfile_region}{file}"
     try:
