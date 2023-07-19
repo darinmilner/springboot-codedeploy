@@ -16,12 +16,11 @@ String ticket
 String envFileName
 
 pipeline {
-//     agent {
-//         dockerfile {
-//             filename "Jenkins/Agent/Dockerfile"
-//         }
-//     }
-    agent any
+    agent {
+        dockerfile {
+            filename "Jenkins/Agent/Dockerfile"
+        }
+    }
 
     environment {
         String BUCKET_PREFIX = "taskapi-storage-bucket-"
