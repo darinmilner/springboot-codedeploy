@@ -21,6 +21,7 @@ pipeline {
 //             filename "Jenkins/Agent/Dockerfile"
 //         }
 //     }
+    agent any
 
     environment {
         String BUCKET_PREFIX = "taskapi-storage-bucket-"
